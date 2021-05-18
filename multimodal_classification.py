@@ -16,7 +16,7 @@ sys.path.append("F:\Download\Dataset")
 import argparse
 import bert
 import numpy as np
-from nltk.corpus impinitort stopwords
+from nltk.corpus import stopwords
 import tensorflow as tf                 # tensorflow version 2.4 (>=2 required)
 import tensorflow_hub as hub
 from tensorflow.keras.layers import *
@@ -191,25 +191,28 @@ test_data = tf.data.experimental.make_csv_dataset(test_path, batch_size=1,
 
 # filter na in image url column
 if sample_count is not None:
-    _skip = 12000
+    _skip = 20000
     train_data = train_data.skip(_skip).take(sample_count)
     val_data = val_data.skip(_skip).take(sample_count)
     test_data = test_data.skip(_skip).take(sample_count)
 
 train_data = train_data.filter(lambda x: tf.math.reduce_all(
     tf.math.not_equal(x["image_url"], "")))
+train_data = train_data.filter(lambda x: tf.math.logical_not(tf.strings.regex_full_match(x["id"][0], ".*[^\w]+.*")))
 train_data = train_data.filter(lambda x: check_image(
     tf.strings.join([image_folder, "/", x["id"], ".jpg"])[0]))
 train_data = jpeg_decoder(train_data)
 
 val_data = val_data.filter(lambda x: tf.math.reduce_all(
     tf.math.not_equal(x["image_url"], "")))
+val_data = val_data.filter(lambda x: tf.math.logical_not(tf.strings.regex_full_match(x["id"][0], ".*[^\w]+.*")))
 val_data = val_data.filter(lambda x: check_image(
     tf.strings.join([image_folder, "/", x["id"], ".jpg"])[0]))
 val_data = jpeg_decoder(val_data)
 
 test_data = test_data.filter(lambda x: tf.math.reduce_all(
     tf.math.not_equal(x["image_url"], "")))
+test_data = test_data.filter(lambda x: tf.math.logical_not(tf.strings.regex_full_match(x["id"][0], ".*[^\w]+.*")))
 test_data = test_data.filter(lambda x: check_image(
     tf.strings.join([image_folder, "/", x["id"], ".jpg"])[0]))
 test_data = jpeg_decoder(test_data)
